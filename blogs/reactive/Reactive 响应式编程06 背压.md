@@ -2,27 +2,27 @@
 
 ​	    如果生产者发出数据的速度和消费者处理数据的速度有所不同，这时候消费者应该采用特定的策略来消费数据流中的数据。如果消费者处理速度跟不上生产者的速度。
 
-![avatar](../../images/reactive/背压1.png)
+![avatar](../../images/reactive/背压1/背压1.png)
 
-![avatar](../../images/reactive/背压2.png)
+![avatar](../../images/reactive/背压1/背压2.png)
 
 缓冲区的作用相当于把生产者发出的数据暂时存储起来供消费者慢慢消费。
 
-![avatar](../../images/reactive/背压3.png)
+![avatar](../../images/reactive/背压1/背压3.png)
 
-![avatar](../../images/reactive/背压4.png)
+![avatar](../../images/reactive/背压1/背压4.png)
 
-![avatar](../../images/reactive/背压5.png)
+![avatar](../../images/reactive/背压1/背压5.png)
 
 息量，而且最多只能发送这些量，然后一直等到堆更多消息的进一步请求。
 
-![avatar](../../images/reactive/背压6.png)
+![avatar](../../images/reactive/背压1/背压6.png)
 
-![avatar](../../images/reactive/背压7.png)
+![avatar](../../images/reactive/背压1/背压7.png)
 
-![avatar](../../images/reactive/背压8.png)
+![avatar](../../images/reactive/背压1/背压8.png)
 
-![avatar](../../images/reactive/背压10.png)
+![avatar](../../images/reactive/背压1/背压10.png)
 
 背压代码案例
 
@@ -244,7 +244,7 @@ public class ReactorBackPressureTest  {
 
 buffer策略的执行效果
 
-![avatar](../../images/reactive/背压11.png)
+![avatar](../../images/reactive/背压1/背压11.png)
 
-![avatar](../../images/reactive/背压12.png)
+![avatar](../../images/reactive/背压1/背压12.png)
 

@@ -447,7 +447,7 @@ void os::signal_init() {
 JVM创建了一个新的进程来实现信号处理，这个线程叫“Signal Dispatcher”，一个线程创建之后需要有一个入口，“Signal
 Dispatcher”的入口是signal_thread_entry：
 
-![java动态调试技术原理1](../../images/agent/java动态调试技术原理1.png)
+![java动态调试技术原理1](../../images/agent/动态调试技术原理1/java动态调试技术原理1.png)
 
 这段代码截取自signal_thread_entry函数，截取中的内容是和Attach机制信号处理相关的代码。这段代码的意思是，当接收到“SIGBREAK”信号，就执行接下来的代码，这个信号是需要Attach到JVM上的信号发出来，这个后面会再分析。我们先来看一句关键的代码：AttachListener::
 is_init_trigger()：
@@ -644,7 +644,7 @@ JNIEXPORT void JNICALL Java_sun_instrument_InstrumentationImpl_redefineClasses0
 
 redefineClasses这个函数的实现比较复杂，代码很长。下面是一段关键的代码片段：
 
-![java动态调试技术原理redefineClasses](../../images/agent/java动态调试技术原理redefineClasses.png)
+![java动态调试技术原理redefineClasses](../../images/agent/动态调试技术原理1/java动态调试技术原理redefineClasses.png)
 可以看到，其实是调用了JVMTI的RetransformClasses函数来完成类的重定义细节。
 
 ```
@@ -704,7 +704,7 @@ API来实现的动态调试工具，它通过在目标JVM上启动一个TcpServe
 Java-debug-tool包括一个Java
 Agent和一个用于处理调试命令的核心API，核心API通过一个自定义的类加载器加载进来，以保证目标JVM的类不会被污染。整体上Java-debug-tool的设计是一个Client-Server的架构，命令客户端需要完整的完成一个命令之后才能继续执行下一个调试命令。Java-debug-tool支持多人同时进行调试，下面是整体架构图：
 
-![java动态调试技术原理javaDebugTool](../../images/agent/java动态调试技术原理javaDebugTool.png)
+![java动态调试技术原理javaDebugTool](../../images/agent/动态调试技术原理1/java动态调试技术原理javaDebugTool.png)
 
 下面对每一层做简单介绍：
 
@@ -733,7 +733,7 @@ Java-debug-tool使用字节码增强来获取到方法运行时的信息，比�
 
 Java-debug-tool在实现上使用了ASM工具来进行字节码增强，并且每个插桩点都可以进行配置，如果不想要什么信息，则没必要进行对应的插桩操作。这种可配置的设计是非常有必要的，因为有时候我们仅仅是想要知道方法的入参和出参，但Java-debug-tool却给我们返回了所有的调试信息，这样我们就得在众多的输出中找到我们所关注的内容。如果可以进行配置，则除了入参点和出参点外其他的桩都不插，那么就可以快速看到我们想要的调试数据，这种设计的本质是为了让调试者更加专注。下面是Java-debug-tool的字节码增强工作方式：
 
-![java动态调试技术原理插桩](../../images/agent/java动态调试技术原理插桩.png)
+![java动态调试技术原理插桩](../../images/agent/动态调试技术原理1/java动态调试技术原理插桩.png)
 
 如上图所示，当调试者发出调试命令之后，Java-debug-tool会识别命令并判断是否需要进行字节码增强，如果命令需要增强字节码，则判断当前类+当前方法是否已经被增强过。上文已经提到，字节码替换是有一定损耗的，这种具有损耗的操作发生的次数越少越好，所以字节码替换操作会被记录起来，后续命令直接使用即可，不需要重复进行字节码增强，字节码增强还涉及多个调试客户端的协同工作问题，当一个客户端增强了一个类的字节码之后，这个客户端就锁定了该字节码，其他客户端变成只读，无法对该类进行字节码增强，只有当持有锁的客户端主动释放锁或者断开连接之后，其他客户端才能继续增强该类的字节码。
 
@@ -748,7 +748,7 @@ Advice是调试数据收集器，不同的调试策略会对应不同的Advice�
 
 关于Advice，需要说明的另外一点就是线程安全，因为它加载之后会运行在目标JVM的线程中，目标JVM的方法极有可能是多线程访问的，这也就是说，Advice需要有能力处理多个线程同时访问方法的能力，如果Advice处理不当，则可能会收集到杂乱无章的调试数据。下面的图片展示了Advice和Java-debug-tool调试分析模块、目标方法执行以及调试客户端等模块的关系。
 
-![java动态调试技术Advice4-2](../../images/agent/java动态调试技术Advice4-2.png)
+![java动态调试技术Advice4-2](../../images/agent/动态调试技术原理1/java动态调试技术Advice4-2.png)
 
 Advice的首次挂载由Java-debug-tool的命令处理器完成，当一次调试数据收集完成之后，调试数据处理模块会自动卸载Advice，然后进行判断，如果调试数据符合Advice的策略，则直接将数据交由数据处理模块进行处理，否则会清空调试数据，并再次将Advice挂载到目标方法上去，等待下一次调试数据。非首次挂载由调试数据处理模块进行，它借助Advice按需取数据，如果不符合需求，则继续挂载Advice来获取数据，否则对调试数据进行处理并返回给客户端。
 
@@ -758,7 +758,7 @@ Advice的首次挂载由Java-debug-tool的命令处理器完成，当一次调�
 
 上文已经完整的描述了Java-debug-tool的设计以及核心技术方案，本小节将详细介绍Java-debug-tool的命令设计与实现。首先需要将一个调试命令的执行流程描述清楚，下面是一张用来表示命令请求处理流程的图片：
 
-![java动态调试技术原理java-debug-tool执行流程](../../images/agent/java动态调试技术原理java-debug-tool执行流程.png)
+![java动态调试技术原理java-debug-tool执行流程](../../images/agent/动态调试技术原理1/java动态调试技术原理java-debug-tool执行流程.png)
 
 上图简单的描述了Java-debug-tool的命令处理方式，客户端连接到服务端之后，会进行一些协议解析、协议认证、协议填充等工作，之后将进行命令分发。服务端如果发现客户端的命令不合法，则会立即返回错误信息，否则再进行命令处理。命令处理属于典型的三段式处理，前置命令处理、命令处理以及后置命令处理，同时会对命令处理过程中的异常信息进行捕获处理，三段式处理的好处是命令处理被拆成了多个阶段，多个阶段负责不同的职责。前置命令处理用来做一些命令权限控制的工作，并填充一些类似命令处理开始时间戳等信息，命令处理就是通过字节码增强，挂载Advice进行数据收集，再经过数据处理来产生命令结果的过程，后置处理则用来处理一些连接关闭、字节码解锁等事项。
 
@@ -781,13 +781,13 @@ Java-debug-tool通过下面的信息来向调试者呈现出一次方法执行�
 
 下图展示了Java-debug-tool获取到正在运行的方法的执行视图的信息。
 
-![java动态调试技术javaDebugTool执行视图信息](../../images/agent/java动态调试技术javaDebugTool执行视图信息.png)
+![java动态调试技术javaDebugTool执行视图信息](../../images/agent/动态调试技术原理1/java动态调试技术javaDebugTool执行视图信息.png)
 
 ## Java-debug-tool与同类产品对比分析
 
 Java-debug-tool的同类产品主要是greys，其他类似的工具大部分都是基于greys进行的二次开发，所以直接选择greys来和Java-debug-tool进行对比。
 
-![java动态调试技术产品对比](../../images/agent/java动态调试技术产品对比.png)
+![java动态调试技术产品对比](../../images/agent/动态调试技术原理1/java动态调试技术产品对比.png)
 
 # 总结
 
